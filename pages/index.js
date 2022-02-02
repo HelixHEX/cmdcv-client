@@ -15,40 +15,53 @@ const Home = () => {
       const link = document.createElement("a");
       link.target = "_blank";
       link.download = `${username}.txt`;
-      await axios
-        .get(`${process.env.NEXT_PUBLIC_API}/search?username=${username}`, {
-          responseType: "blob",
-        })
-        .then((res) => {
-          setLoading(false);
-          if (res.status === 200) {
-            link.href = URL.createObjectURL(
-              new Blob([res.data], { type: "text/plain" })
-            );
-            link.click();
+      try {
+        await axios
+          .get(`${process.env.NEXT_PUBLIC_API}/search?username=${username}`, {
+            responseType: "blob",
+          })
+          .then((res) => {
+            setLoading(false);
+            console.log(res.data);
+            if (res.status === 200) {
+              link.href = URL.createObjectURL(
+                new Blob([res.data], { type: "text/plain" })
+              );
+              link.click();
 
-            toast({
-              duration: 5000,
-              title: "Success",
-              description: "Tweets retreived",
-              status: "success",
-            });
-          } else if (res.data.message) {
-            toast({
-              duration: 5000,
-              title: "Uh Oh :(",
-              description: res.data.message,
-              status: "error",
-            });
-          } else {
-            toast({
-              duration: 5000,
-              title: "Uh Oh :((",
-              description: "An error has occurred",
-              status: "error",
-            });
-          }
-        });
+              toast({
+                duration: 5000,
+                title: "Success",
+                description: "Tweets retreived",
+                status: "success",
+              });
+            } else if (res.data.message) {
+              toast({
+                duration: 5000,
+                title: "Uh Oh :(",
+                description: res.data.message,
+                status: "error",
+              });
+            }
+          });
+      } catch (e) {
+        if (e.toString().includes("status code 429")) {
+          toast({
+            duration: 5000,
+            title: "Uh Oh :(",
+            description: "Too many requests",
+            status: "error",
+          });
+        } else {
+          toast({
+            duration: 5000,
+            title: "Uh Oh :(",
+            description: "An error has occurred",
+            status: "error",
+          });
+        }
+      }
+      setLoading(false);
     }
   };
   return (
@@ -69,7 +82,7 @@ const Home = () => {
       >
         Download any twitter user&apos;s tweets
       </Text>
-      <Flex w='auto' alignSelf={'center'}>
+      <Flex w="auto" alignSelf={"center"}>
         <Animated>
           <Flex
             boxShadow={"2xl"}
