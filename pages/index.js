@@ -67,7 +67,7 @@ const Home = () => {
         mb={2}
         alignSelf={"center"}
       >
-        Download any twitter user's tweets
+        Download any twitter user&apos;s tweets
       </Text>
       <Flex w='auto' alignSelf={'center'}>
         <Animated>
