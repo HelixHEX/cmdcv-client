@@ -6,29 +6,39 @@ import Animated from "../utils/Animated";
 const Home = () => {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [hidden, setHidden] = useState(true);
+  const [file, setFile] = useState(null);
   const toast = useToast();
+
+  const download = () => {
+    const link = document.createElement("a");
+    link.target = "_blank";
+    link.download = `${username}.txt`;
+    link.href = URL.createObjectURL(new Blob([file], { type: "text/plain" }));
+    link.click();
+  };
+
+  const openPage = () => {
+    const link = document.createElement("a");
+    link.target = "_blank";
+    link.href = URL.createObjectURL(new Blob([file], { type: "text/plain" }));
+    link.click();
+  };
 
   const retrieveTweets = async () => {
     setLoading(true);
     if (username.length > 0) {
-      const link = document.createElement("a");
-      link.target = "_blank";
-      link.download = `${username}.txt`;
       try {
         await axios
-          .get(`${process.env.NEXT_PUBLIC_API}/search?username=${username}`, {
+          .get(`${process.env.NEXT_PUBLIC_API}/search?username=${username.toLocaleLowerCase()}`, {
             responseType: "blob",
           })
           .then((res) => {
             setLoading(false);
             console.log(res.data);
             if (res.status === 200) {
-              link.href = URL.createObjectURL(
-                new Blob([res.data], { type: "text/plain" })
-              );
-              link.click();
-
+              setFile(res.data);
+              setHidden(false);
               toast({
                 duration: 5000,
                 title: "Success",
@@ -94,7 +104,10 @@ const Home = () => {
           >
             <Input
               autoFocus
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setHidden(true);
+              }}
               value={username}
               variant={"flushed"}
               w={["100%", 300, 400, 400]}
@@ -108,6 +121,41 @@ const Home = () => {
             >
               Retrieve Tweets
             </Button>
+            <Flex
+              flexDir={["column", "row", "row", "row"]}
+              hidden={hidden}
+              w={["100%", "100%", "80%"]}
+              justifyContent="space-between"
+              mt={4}
+              alignSelf={"center"}
+            >
+              <Text
+               mt={[3, 3, 0, 0]}
+                alignSelf={"center"}
+                fontSize={20}
+                _hover={{
+                  cursor: "pointer",
+                  bgGradient: "linear(to-tl, #7928CA, #FF0080)",
+                  bgClip: "text",
+                }}
+                onClick={download}
+              >
+                Download
+              </Text>
+              <Text
+              mt={[3, 3, 0, 0]}
+                alignSelf={"center"}
+                onClick={() => openPage(username)}
+                fontSize={20}
+                _hover={{
+                  cursor: "pointer",
+                  bgGradient: "linear(to-tl, #7928CA, #FF0080)",
+                  bgClip: "text",
+                }}
+              >
+                Open in new tab
+              </Text>
+            </Flex>
           </Flex>
         </Animated>
       </Flex>
